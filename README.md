@@ -105,9 +105,4 @@ graph TD
     terraform apply
     ```
 
----
 
-## 📚 Study Reference & Interview Prep
-Before technical sessions or DevOps interviews, review:
-*   [interview_prep_sheet.md](interview_prep_sheet.md): A concise cheat sheet containing answers to key architectural questions, scenario-based issues, and high-impact talking points.
-*   [devops_interview_guide.md](devops_interview_guide.md): In-depth review of the stack trade-offs (EC2 vs. Managed Kubernetes, Jenkins vs. GitHub Actions) and deep-dive technical reasoning.
