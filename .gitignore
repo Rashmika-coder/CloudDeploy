@@ -42,3 +42,9 @@ Thumbs.db
 # App local configurations
 app/.env
 app/src/.env
+
+# Personal/private files - not for repo
+*.pdf
+interview_prep_sheet.md
+devops_interview_guide.md
+
