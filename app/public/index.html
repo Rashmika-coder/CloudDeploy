@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudDeploy - System Metrics Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/873/873120.png">
+</head>
+<body>
+  <div class="background-decor">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <div class="container">
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>CloudDeploy</h1>
+          <p>Cloud-Native DevOps Showcase</p>
+        </div>
+      </div>
+      <div class="status-badge" id="container-status">
+        <span class="status-dot"></span>
+        <span class="status-label">Checking Environment...</span>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <!-- Card 1: Pipeline Details -->
+      <section class="card glass-card info-card span-2">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Deployment Information
+        </h2>
+        <div class="deployment-meta">
+          <div class="meta-item">
+            <label>Environment</label>
+            <span class="value" id="meta-env">-</span>
+          </div>
+          <div class="meta-item">
+            <label>App Version</label>
+            <span class="value code-text" id="meta-version">-</span>
+          </div>
+          <div class="meta-item">
+            <label>Deployed By</label>
+            <span class="value" id="meta-deployed-by">-</span>
+          </div>
+          <div class="meta-item">
+            <label>Instance OS</label>
+            <span class="value" id="meta-os">-</span>
+          </div>
+        </div>
+        <div class="pulse-banner">
+          <div class="pulse-icon">✓</div>
+          <div class="pulse-text">
+            <h4>Continuous Integration & Deployment Active</h4>
+            <p>Monitored via GitHub Actions | Hosted on AWS EC2</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 2: Memory Usage -->
+      <section class="card glass-card metrics-card">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.828 10.172a4 4 0 00-5.656 0l-2.828 2.829a4 4 0 000 5.656l11.314 11.314a4 4 0 005.656 0l2.828-2.829a4 4 0 000-5.656L5.828 10.172z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 10H6v3h3v-3zm0 5H6v3h3v-3zm5-5h-3v3h3v-3zm0 5h-3v3h3v-3z" />
+          </svg>
+          Memory Consumption
+        </h2>
+        <div class="radial-container">
+          <svg class="radial-progress" viewBox="0 0 36 36">
+            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle" id="mem-progress" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+          <div class="radial-percentage" id="mem-percent">0%</div>
+        </div>
+        <div class="metrics-details">
+          <p>Total Memory: <span class="highlight" id="mem-total">-</span></p>
+          <p>Used Memory: <span class="highlight" id="mem-used">-</span></p>
+          <p>Free Memory: <span class="highlight" id="mem-free">-</span></p>
+        </div>
+      </section>
+
+      <!-- Card 3: Host & System Details -->
+      <section class="card glass-card metrics-card">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 3h13.5m-13.5-3V4.875A2.625 2.625 0 017.875 2.25h8.25a2.625 2.625 0 012.625 2.625V14.25M3 16.5h18a2.25 2.25 0 002.25-2.25V5.25A2.25 2.25 0 0021 3H3a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+          Host & Engine Info
+        </h2>
+        <ul class="system-list">
+          <li>
+            <span>Hostname</span>
+            <span class="badge" id="host-name">-</span>
+          </li>
+          <li>
+            <span>Kernel Version</span>
+            <span class="badge" id="host-release">-</span>
+          </li>
+          <li>
+            <span>CPU Model</span>
+            <span class="badge scroll-badge" id="host-cpu">-</span>
+          </li>
+          <li>
+            <span>CPU Cores</span>
+            <span class="badge" id="host-cores">-</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Card 4: Load Average & Uptime -->
+      <section class="card glass-card info-card span-2">
+        <h2 class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          System Performance & Activity
+        </h2>
+        <div class="perf-row">
+          <div class="perf-col">
+            <h3>CPU Load Average (1m, 5m, 15m)</h3>
+            <div class="load-avg-container">
+              <div class="load-badge">
+                <span class="load-val" id="load-1">0.00</span>
+                <span class="load-lbl">1 min</span>
+              </div>
+              <div class="load-badge">
+                <span class="load-val" id="load-5">0.00</span>
+                <span class="load-lbl">5 min</span>
+              </div>
+              <div class="load-badge">
+                <span class="load-val" id="load-15">0.00</span>
+                <span class="load-lbl">15 min</span>
+              </div>
+            </div>
+          </div>
+          <div class="perf-col">
+            <h3>Server Uptime</h3>
+            <div class="uptime-clock" id="uptime-display">
+              00h 00m 00s
+            </div>
+            <p class="small-hint">Time elapsed since last server deployment / reboot.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-left">
+        <p>&copy; 2026 CloudDeploy Showcase</p>
+      </div>
+      <div class="footer-center">
+        <button id="refresh-btn" class="action-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+          </svg>
+          Sync Metrics
+        </button>
+      </div>
+      <div class="footer-right">
+        <span class="tech-tag tag-docker">Docker</span>
+        <span class="tech-tag tag-aws">AWS EC2</span>
+        <span class="tech-tag tag-actions">GitHub Actions</span>
+      </div>
+    </footer>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

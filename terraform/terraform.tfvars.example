@@ -1,0 +1,13 @@
+# Example configuration file for setting variable overrides
+# Rename to terraform.tfvars and customize prior to deployment
+
+aws_region      = "us-east-1"
+project_name    = "cloud-deploy"
+environment     = "production"
+instance_type   = "t2.micro"
+
+# Replace this with your personal deployment machine's public IP range (e.g., ["198.51.100.45/32"])
+allowed_ssh_cidr = ["0.0.0.0/0"]
+
+# Insert your actual SSH public key (e.g., "ssh-rsa AAAA...")
+public_key      = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."

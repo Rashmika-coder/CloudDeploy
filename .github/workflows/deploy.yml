@@ -1,0 +1,129 @@
+name: CloudDeploy Continuous Integration & Deployment
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ==========================================
+  # CI JOB: Test, Lint, and Build Container
+  # ==========================================
+  build-and-test:
+    name: Build, Lint & Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install Node Dependencies
+        run: |
+          cd app
+          npm ci
+
+      - name: Execute Code Linting Check
+        run: |
+          cd app
+          npm run lint
+
+      - name: Run Application Unit Tests
+        run: |
+          cd app
+          npm test
+
+      - name: Set up Docker Buildx
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract Commit Metadata for Image Tags
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: meta
+        run: |
+          echo "SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build & Push Production Docker Image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v4
+        with:
+          context: ./app
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/cloud-deploy-app:latest
+            ${{ secrets.DOCKER_USERNAME }}/cloud-deploy-app:${{ env.SHA_SHORT }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==========================================
+  # CD JOB: Deploy Container Image to EC2 VM
+  # ==========================================
+  deploy-to-ec2:
+    name: Continuous Deployment to AWS EC2
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Execute Remote Deployment Script via SSH
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            echo "=== Deployed Pipeline Triggered ==="
+            # 1. Log in to Docker Hub if needed (optional for public repositories)
+            # docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+
+            # 2. Pull the latest built image from Docker Hub
+            echo "Pulling latest docker container image..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/cloud-deploy-app:latest
+
+            # 3. Clean up active container running under identical tag config
+            echo "Checking for running instances of 'cloud-deploy-app'..."
+            if [ "$(docker ps -a -q -f name=cloud-deploy-container)" ]; then
+                echo "Stopping and removing existing container..."
+                docker stop cloud-deploy-container
+                docker rm cloud-deploy-container
+            fi
+
+            # 4. Spin up the container on port 3000 mapping
+            echo "Starting new container..."
+            docker run -d \
+              --name cloud-deploy-container \
+              --restart unless-stopped \
+              -p 3000:3000 \
+              -e NODE_ENV=production \
+              -e APP_VERSION="1.0.0" \
+              -e DEPLOYED_BY="GitHub Actions CI/CD (Run #${{ github.run_number }})" \
+              ${{ secrets.DOCKER_USERNAME }}/cloud-deploy-app:latest
+
+            # 5. Run sanity health check locally on the VM host
+            echo "Waiting for container startup..."
+            sleep 3
+            
+            echo "Performing local service health check..."
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/health)
+            
+            if [ "$HTTP_STATUS" -eq 200 ]; then
+              echo "Deployment succeeded! Server returned HTTP 200 on /health"
+            else
+              echo "Deployment health check failed! Server returned HTTP $HTTP_STATUS"
+              exit 1
+            fi
