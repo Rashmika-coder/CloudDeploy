@@ -11,21 +11,21 @@ This repository demonstrates Infrastructure as Code (IaC) using **Terraform**, c
 ```mermaid
 graph TD
     Developer[Developer] -- Git Push --> GitHub[GitHub Repository]
-    
-    subgraph GitHub Actions Runner (CI/CD)
-        GitHub -- Triggers Pipeline --> Tests[1. Run Tests & Lints]
-        Tests -- Success --> Build[2. Build Optimized Docker Image]
+
+    subgraph CICD["GitHub Actions Runner - CI/CD"]
+        GitHub -- Triggers Pipeline --> Tests["1. Run Tests and Lints"]
+        Tests -- Success --> Build["2. Build Optimized Docker Image"]
         Build -- Push Image --> DockerHub[(Docker Hub Registry)]
-        Build -- Trigger CD --> Deploy[3. Deploy to EC2 via SSH]
+        Build -- Trigger CD --> Deploy["3. Deploy to EC2 via SSH"]
     end
-    
+
     DockerHub -- Pull Image --> EC2[AWS EC2 Host VM]
     Deploy -- SSH Restart Commands --> EC2
-    
-    subgraph AWS VPC (Network Isolation)
-        EC2 -- Runs Container --> App[Node.js App Dashboard: Port 3000]
+
+    subgraph VPC["AWS VPC - Network Isolation"]
+        EC2 -- Runs Container --> App["Node.js App Dashboard - Port 3000"]
     end
-    
+
     User([End User]) -- Access Dashboard --> App
 ```
 
